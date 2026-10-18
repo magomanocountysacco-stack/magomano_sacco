@@ -1,0 +1,15 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "magomano-sacco",
+  "pages_build_output_dir": "./dist",
+  "compatibility_date": "2026-10-08",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "magomano-db",
+      "database_id": "be164bcd-76fd-4845-8778-3386ba942b22",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

@@ -1,0 +1,161 @@
+/* ==========================================================================
+   OFFICIAL A4 PRINTABLE LOAN DOCUMENT SHEET (SCREEN & PRINT)
+   ========================================================================== */
+
+.loan-sheet-wrapper {
+  padding: 24px 16px;
+  background-color: #eef3f6;
+  display: flex;
+  justify-content: flex-start;
+  overflow-x: auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 900px) {
+  .loan-sheet-wrapper {
+    justify-content: center;
+  }
+}
+
+/* The Exact Physical A4 Document */
+.official-loan-document {
+  box-sizing: border-box;
+  width: 210mm;
+  min-width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  padding: 12mm 15mm 10mm;
+  background-color: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 16px 50px rgb(25 58 97 / 18%);
+  border-radius: 3px;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 1. Masthead */
+.doc-letterhead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10mm;
+  padding-bottom: 4mm;
+  border-bottom: 2pt solid #06177f;
+}
+
+.doc-brand-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 4mm;
+}
+
+.doc-crest-icon {
+  display: flex;
+  width: 16mm;
+  height: 16mm;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  padding: 1.2mm;
+  border-radius: 3.5mm;
+  background: #06177f;
+  flex-shrink: 0;
+}
+
+.doc-crest-card {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 2.2mm;
+  background: #fff;
+}
+
+.doc-crest-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.doc-org-name {
+  margin: 0;
+  font-size: 16pt;
+  font-weight: 850;
+  letter-spacing: -0.01em;
+  color: #193a61;
+  line-height: 1.15;
+}
+
+.doc-org-sub {
+  margin: 1mm 0 0;
+  font-size: 8pt;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #06177f;
+}
+
+.doc-org-address {
+  margin: 1.5mm 0 0;
+  font-size: 7.5pt;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.doc-badge-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1.8mm;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.doc-ref-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 1.8mm 3.5mm;
+  border-radius: 1.8mm;
+  background-color: #fff9e8;
+  border: 0.8pt solid #e7d28a;
+}
+
+.ref-label {
+  font-size: 6.5pt;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #8b6a10;
+}
+
+.ref-code {
+  font-size: 10pt;
+  font-weight: 850;
+  color: #193a61;
+  font-family: monospace;
+}
+
+.doc-date-box {
+  display: flex;
+  align-items: center;
+  gap: 1.5mm;
+}
+
+.date-label {
+  font-size: 6.8pt;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.date-val {
+  font-size: 7.8pt;
+  font-weight: 700;
+  color: #334155;
+}

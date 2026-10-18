@@ -1,0 +1,49 @@
+/* ==========================================================================
+   MAGOMANO SACCO — CORE BANKING ADMINISTRATION SUITE & OFFICIAL LOAN PDF
+   ========================================================================== */
+
+:root {
+  --admin-bg: #f8fafc;
+  --admin-surface: #ffffff;
+  --admin-border: #e2e8f0;
+  --admin-border-subtle: #edf2f7;
+  --admin-dark-bg: #17102f;
+  --admin-dark-card: #211845;
+  --admin-dark-border: #35275e;
+
+  /* SACCO brand colors sampled from the logo. */
+  --sacco-blue: #2c1971;
+  --sacco-blue-hover: #211255;
+  --sacco-blue-dark: #1d104f;
+  --sacco-blue-light: #f3f0fa;
+  --sacco-blue-border: #c8bde6;
+
+  --sacco-orange: #e97f35;
+  --sacco-orange-hover: #c76624;
+  --sacco-orange-vibrant: #f09a54;
+  --sacco-orange-light: #fff4ea;
+  --sacco-orange-border: #e9b487;
+
+  /* Admin Theme Aliases */
+  --admin-primary: var(--sacco-blue);
+  --admin-primary-hover: var(--sacco-blue-hover);
+  --admin-primary-light: var(--sacco-blue-light);
+  --admin-accent: var(--sacco-orange);
+  --admin-accent-hover: var(--sacco-orange-hover);
+  --admin-accent-light: var(--sacco-orange-light);
+
+  --admin-text-dark: #0f172a;
+  --admin-text-muted: #64748b;
+  --admin-text-light: #94a3b8;
+  --admin-amber: #d97706;
+  --admin-amber-light: #fffbeb;
+  --admin-rose: #e11d48;
+  --admin-rose-light: #fff1f2;
+  --admin-indigo: #4f46e5;
+  --admin-indigo-light: #eef2ff;
+  --admin-success: #10b981;
+  --admin-success-light: #ecfdf5;
+  --admin-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --admin-shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
+  --admin-shadow-lg: 0 12px 30px rgba(15, 23, 42, 0.1);
+}
