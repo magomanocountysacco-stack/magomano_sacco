@@ -1,5 +1,13 @@
 apply plugin: 'com.android.application'
 
+def releaseSigningPropertiesPath = System.getenv('MAGOMANO_SIGNING_PROPERTIES')
+    ?: new File(System.getProperty('user.home'), '.config/magomano-signing/keystore.properties').absolutePath
+def releaseSigningPropertiesFile = new File(releaseSigningPropertiesPath)
+def releaseSigningProperties = new Properties()
+if (releaseSigningPropertiesFile.exists()) {
+    releaseSigningPropertiesFile.withInputStream { releaseSigningProperties.load(it) }
+}
+
 android {
     namespace = "rw.magomano.sacco"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -16,10 +24,31 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (releaseSigningPropertiesFile.exists()) {
+                storeFile file(releaseSigningProperties['storeFile'])
+                storePassword releaseSigningProperties['storePassword']
+                keyAlias releaseSigningProperties['keyAlias']
+                keyPassword releaseSigningProperties['keyPassword']
+            }
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+tasks.configureEach {
+    if (name == 'validateSigningRelease') {
+        doFirst {
+            if (!releaseSigningPropertiesFile.exists()) {
+                throw new GradleException('Missing android/keystore.properties required for a signed release build.')
+            }
         }
     }
 }

@@ -35,7 +35,7 @@ The PWA shell and static assets are cached for offline startup. In the Android a
 
 ## Android APK
 
-The Android app uses Capacitor 8 and `@capacitor-community/sqlite` with SQLCipher encryption. The default API origin is `https://magomano-sacco.pages.dev`; set `VITE_API_BASE_URL` at build time if the Pages deployment uses another hostname. The native API bridge sends session cookies to that origin and the Pages Function allows credentialed requests from the Capacitor Android origin (`https://localhost`).
+The Android app uses Capacitor 8 and `@capacitor-community/sqlite` with SQLCipher encryption. The default API origin is `https://magomano-sacco-8bl.pages.dev`; set `VITE_API_BASE_URL` at build time if the Pages deployment uses another hostname. The native API bridge sends session cookies to that origin and the Pages Function allows credentialed requests from the Capacitor Android origin (`https://localhost`).
 
 Apply all pending migrations to the remote D1 database before deploying the updated API. Then build a debug APK with:
 
@@ -44,7 +44,16 @@ npm run db:migrate -- --remote
 npm run android:apk
 ```
 
-The APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`. Building requires Android Studio command line tools, an Android SDK, and JDK 21 (required by Capacitor 8). A release APK should be built and signed separately for distribution.
+The APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`. Building requires Android Studio command line tools, an Android SDK, and JDK 21 (required by Capacitor 8).
+
+Release APKs use a local `~/.config/magomano-signing/keystore.properties` file. It must provide `storeFile`, `storePassword`, `keyAlias`, and `keyPassword`; alternatively, set `MAGOMANO_SIGNING_PROPERTIES` to another properties-file path. Never commit the properties file or keystore. Keep secure backups of the keystore and passwords, as future app updates must use the same signing key. Build a signed release with:
+
+```sh
+cd android
+./gradlew assembleRelease
+```
+
+The signed APK is written to `android/app/build/outputs/apk/release/app-release.apk`.
 
 ## D1 database schema
 
