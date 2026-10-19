@@ -6,7 +6,7 @@ const sqlite = new SQLiteConnection(CapacitorSQLite)
 let database: SQLiteDBConnection | null = null
 let activeScope: string | null = null
 let installed = false
-const configuredApiOrigin = import.meta.env.VITE_API_BASE_URL || 'https://magomano-sacco.pages.dev'
+const configuredApiOrigin = import.meta.env.VITE_API_BASE_URL || 'https://magomano-sacco-8bl.pages.dev'
 
 interface CachedResponse {
   etag: string
