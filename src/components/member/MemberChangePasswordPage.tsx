@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { AlertCircle, CheckCircle2, KeyRound, ShieldCheck } from 'lucide-react'
+import { AlertCircle, CheckCircle2, KeyRound } from 'lucide-react'
 import { readJsonResponse, requestErrorMessage } from '../../networkErrors'
 
 export function MemberChangePasswordPage() {
@@ -57,17 +57,6 @@ export function MemberChangePasswordPage() {
         <p>
           Update your member portal password anytime. Changes take effect immediately without requiring any admin approval.
         </p>
-      </div>
-
-      <div className="member-immediate-security-note">
-        <ShieldCheck size={20} className="security-note-icon" />
-        <div>
-          <strong>Direct &amp; Instant Update</strong>
-          <p>
-            For your security, password updates are processed instantly and apply directly to your account.
-            All other active sessions on other devices will be signed out.
-          </p>
-        </div>
       </div>
 
       <form className="member-account-card member-details-form member-password-form" onSubmit={handlePasswordSubmit}>
