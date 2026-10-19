@@ -37,7 +37,7 @@ export function useAdminPortalState(
 
   // Edit forms
   const [memberForm, setMemberForm] = useState<MemberProfileUpdate>({
-    saccoNumber: '', nationalId: '', fullName: '', phoneNumber: '', email: '', county: '', subCounty: '', jobTitle: '', workBranch: '',
+    saccoNumber: '', nationalId: '', fullName: '', phoneNumber: '', altPhoneNumber: '', email: '', county: '', subCounty: '', jobTitle: '', workBranch: '',
     bankName: '', bankBranch: '', bankAccountName: '', bankAccountNumber: '',
     bankTwoName: '', bankTwoBranch: '', bankTwoAccountName: '', bankTwoAccountNumber: '',
     location: '', maritalStatus: '', nextKinName: '', nextKinRelationship: '', nextKinPhone: '',
@@ -105,7 +105,7 @@ export function useAdminPortalState(
   function beginMemberEdit(member: AdminMember) {
     setEditingMemberId(member.id)
     setMemberForm({
-      saccoNumber: member.saccoNumber ?? '', nationalId: member.nationalId ?? '', fullName: member.fullName ?? '', phoneNumber: member.phoneNumber ?? '', email: member.email ?? '',
+      saccoNumber: member.saccoNumber ?? '', nationalId: member.nationalId ?? '', fullName: member.fullName ?? '', phoneNumber: member.phoneNumber ?? '', altPhoneNumber: member.altPhoneNumber ?? '', email: member.email ?? '',
       county: member.county ?? '', subCounty: member.subCounty ?? '', bankName: member.bankName ?? '',
       bankBranch: member.bankBranch ?? '', bankAccountName: member.bankAccountName ?? '',
       bankAccountNumber: member.bankAccountNumber ?? '', bankTwoName: member.bankTwoName ?? '',

@@ -61,7 +61,7 @@ export async function handleAdminMembers(path, request, session, db) {
       db.prepare(`
       SELECT m.id, m.sacco_number AS saccoNumber, m.national_id AS nationalId, m.full_name AS fullName,
         m.first_name AS firstName, m.second_name AS secondName, m.last_name AS lastName,
-        m.phone_number AS phoneNumber, m.account_status AS accountStatus,
+        m.phone_number AS phoneNumber, COALESCE(m.alt_phone_number, '') AS altPhoneNumber, m.account_status AS accountStatus,
         m.email, m.county, m.sub_county AS subCounty,
         m.bank_name AS bankName, m.bank_branch AS bankBranch,
         m.bank_account_name AS bankAccountName, m.bank_account_number AS bankAccountNumber,
@@ -195,6 +195,7 @@ export async function handleAdminMembers(path, request, session, db) {
     if (!['', 'single', 'married', 'divorced', 'widowed', 'other'].includes(maritalStatus)) {
       throw new ApiError('Choose a valid marital status.')
     }
+    const altPhoneNumber = typeof body.altPhoneNumber === 'string' ? body.altPhoneNumber.trim() : ''
     if (values.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
       throw new ApiError('Enter a valid email address, or leave it blank.')
     }
@@ -207,7 +208,7 @@ export async function handleAdminMembers(path, request, session, db) {
       result = await db.prepare(`
         UPDATE members SET
           sacco_number = ?, national_id = ?, full_name = ?, first_name = ?, second_name = ?, last_name = ?,
-          phone_number = ?, email = ?, county = ?, sub_county = ?, bank_name = ?, bank_branch = ?,
+          phone_number = ?, alt_phone_number = ?, email = ?, county = ?, sub_county = ?, bank_name = ?, bank_branch = ?,
           bank_account_name = ?, bank_account_number = ?, bank_two_name = ?, bank_two_branch = ?,
           bank_two_account_name = ?, bank_two_account_number = ?, location = ?,
           marital_status = ?, job_title = COALESCE(?, job_title),
@@ -215,7 +216,7 @@ export async function handleAdminMembers(path, request, session, db) {
           next_kin_name = ?, next_kin_relationship = ?, next_kin_phone = ?
         WHERE id = ?
       `).bind(
-        values.saccoNumber, values.nationalId, values.fullName, firstName, secondName, lastName, values.phoneNumber, values.email,
+        values.saccoNumber, values.nationalId, values.fullName, firstName, secondName, lastName, values.phoneNumber, altPhoneNumber, values.email,
         values.county, values.subCounty, values.bankName, values.bankBranch,
         values.bankAccountName, values.bankAccountNumber, values.bankTwoName, values.bankTwoBranch,
         values.bankTwoAccountName, values.bankTwoAccountNumber, values.location,
@@ -498,14 +499,68 @@ export async function handleAdminMembers(path, request, session, db) {
     const rows = await db.prepare(`
       SELECT p.id, p.member_id AS memberId, m.full_name AS memberName,
         m.sacco_number AS saccoNumber, p.changes_json AS changesJson,
-        p.status, p.submitted_at AS submittedAt
+        p.status, p.submitted_at AS submittedAt,
+        COALESCE(m.phone_number, '') AS curPhoneNumber,
+        COALESCE(m.alt_phone_number, '') AS curAltPhoneNumber,
+        COALESCE(m.email, '') AS curEmail,
+        COALESCE(m.job_title, '') AS curJobTitle,
+        COALESCE(m.work_branch, '') AS curWorkBranch,
+        COALESCE(m.marital_status, '') AS curMaritalStatus,
+        COALESCE(m.county, '') AS curCounty,
+        COALESCE(m.sub_county, '') AS curSubCounty,
+        COALESCE(m.location, '') AS curLocation,
+        COALESCE(m.bank_name, '') AS curBankName,
+        COALESCE(m.bank_branch, '') AS curBankBranch,
+        COALESCE(m.bank_account_name, '') AS curBankAccountName,
+        COALESCE(m.bank_account_number, '') AS curBankAccountNumber,
+        COALESCE(m.bank_two_name, '') AS curBankTwoName,
+        COALESCE(m.bank_two_branch, '') AS curBankTwoBranch,
+        COALESCE(m.bank_two_account_name, '') AS curBankTwoAccountName,
+        COALESCE(m.bank_two_account_number, '') AS curBankTwoAccountNumber,
+        COALESCE(m.next_kin_name, '') AS curNextKinName,
+        COALESCE(m.next_kin_relationship, '') AS curNextKinRelationship,
+        COALESCE(m.next_kin_phone, '') AS curNextKinPhone
       FROM pending_profile_changes p
       JOIN members m ON m.id = p.member_id
       WHERE p.status = 'pending'
       ORDER BY p.submitted_at DESC
     `).all()
     return json({
-      changes: rows.results.map((r) => ({ ...r, changes: JSON.parse(r.changesJson), changesJson: undefined }))
+      changes: rows.results.map((r) => {
+        const changes = JSON.parse(r.changesJson)
+        const current = {
+          phoneNumber: r.curPhoneNumber,
+          altPhoneNumber: r.curAltPhoneNumber,
+          email: r.curEmail,
+          jobTitle: r.curJobTitle,
+          workBranch: r.curWorkBranch,
+          maritalStatus: r.curMaritalStatus,
+          county: r.curCounty,
+          subCounty: r.curSubCounty,
+          location: r.curLocation,
+          bankName: r.curBankName,
+          bankBranch: r.curBankBranch,
+          bankAccountName: r.curBankAccountName,
+          bankAccountNumber: r.curBankAccountNumber,
+          bankTwoName: r.curBankTwoName,
+          bankTwoBranch: r.curBankTwoBranch,
+          bankTwoAccountName: r.curBankTwoAccountName,
+          bankTwoAccountNumber: r.curBankTwoAccountNumber,
+          nextKinName: r.curNextKinName,
+          nextKinRelationship: r.curNextKinRelationship,
+          nextKinPhone: r.curNextKinPhone,
+        }
+        return {
+          id: r.id,
+          memberId: r.memberId,
+          memberName: r.memberName,
+          saccoNumber: r.saccoNumber,
+          status: r.status,
+          submittedAt: r.submittedAt,
+          changes,
+          current,
+        }
+      })
     })
   }
 
@@ -516,12 +571,12 @@ export async function handleAdminMembers(path, request, session, db) {
     const row = await db.prepare(`SELECT * FROM pending_profile_changes WHERE id=? AND status='pending'`).bind(changeId).first()
     if (!row) throw new ApiError('Pending change not found.', 404)
     const changes = JSON.parse(row.changes_json)
-    await db.prepare(`UPDATE members SET phone_number=?, email=?, job_title=?, work_branch=?, county=?, sub_county=?, location=?,
+    await db.prepare(`UPDATE members SET phone_number=?, alt_phone_number=?, email=?, job_title=?, work_branch=?, marital_status=?, county=?, sub_county=?, location=?,
       bank_name=?, bank_branch=?, bank_account_name=?, bank_account_number=?,
       bank_two_name=?, bank_two_branch=?, bank_two_account_name=?, bank_two_account_number=?,
       next_kin_name=?, next_kin_relationship=?, next_kin_phone=? WHERE id=?`
     ).bind(
-      changes.phoneNumber, changes.email, changes.jobTitle ?? '', changes.workBranch ?? '', changes.county, changes.subCounty, changes.location,
+      changes.phoneNumber, changes.altPhoneNumber ?? '', changes.email, changes.jobTitle ?? '', changes.workBranch ?? '', changes.maritalStatus ?? '', changes.county, changes.subCounty, changes.location,
       changes.bankName, changes.bankBranch, changes.bankAccountName, changes.bankAccountNumber,
       changes.bankTwoName, changes.bankTwoBranch, changes.bankTwoAccountName, changes.bankTwoAccountNumber,
       changes.nextKinName, changes.nextKinRelationship, changes.nextKinPhone,

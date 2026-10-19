@@ -6,6 +6,7 @@ import {
   Clock,
   Landmark,
   MapPin,
+  Phone,
   Save,
   UserRound,
   Users,
@@ -24,13 +25,37 @@ interface FieldDef {
   tab: AccountTab
   type?: string
   placeholder?: string
+  options?: { value: string; label: string }[]
+  required?: boolean
 }
 
 const fields: FieldDef[] = [
-  // Personal & Employment
-  { key: 'email', label: 'Email address', group: 'Personal details', tab: 'personal', type: 'email', placeholder: "e.g. kelvin@gmail.com" },
-  { key: 'workBranch', label: 'Branch', group: 'Employment & branch', tab: 'personal', placeholder: 'e.g. Kenol,Kagio' },
-  { key: 'jobTitle', label: 'Job role / Department', group: 'Employment & branch', tab: 'personal', placeholder: 'e.g. Accounts,Line attendant,Cashier' },
+  // Contact numbers
+  { key: 'phoneNumber', label: 'Primary contact number', group: 'Contact details', tab: 'personal', type: 'tel', placeholder: 'e.g. 0712345678', required: true },
+  { key: 'altPhoneNumber', label: 'Alternative contact number (optional)', group: 'Contact details', tab: 'personal', type: 'tel', placeholder: 'e.g. 0798765432' },
+
+  // Personal details
+  {
+    key: 'maritalStatus',
+    label: 'Marital status',
+    group: 'Personal details',
+    tab: 'personal',
+    options: [
+      { value: '', label: 'Select marital status…' },
+      { value: 'single', label: 'Single' },
+      { value: 'married', label: 'Married' },
+      { value: 'divorced', label: 'Divorced' },
+      { value: 'widowed', label: 'Widowed' },
+      { value: 'other', label: 'Other' },
+    ],
+  },
+  { key: 'email', label: 'Email address', group: 'Personal details', tab: 'personal', type: 'email', placeholder: 'e.g. kelvin@gmail.com' },
+
+  // Employment & branch
+  { key: 'workBranch', label: 'Branch / Station', group: 'Employment & branch', tab: 'personal', placeholder: 'e.g. Kenol, Kagio' },
+  { key: 'jobTitle', label: 'Job role / Department', group: 'Employment & branch', tab: 'personal', placeholder: 'e.g. Accounts, Line attendant, Cashier' },
+
+  // Address
   { key: 'county', label: 'County', group: 'Address', tab: 'personal', placeholder: 'e.g. Muranga' },
   { key: 'subCounty', label: 'Sub-county', group: 'Address', tab: 'personal', placeholder: 'e.g. Maragwa' },
   { key: 'location', label: 'Location / Town', group: 'Address', tab: 'personal', placeholder: 'e.g. Kenol' },
@@ -48,7 +73,7 @@ const fields: FieldDef[] = [
   // Next of Kin
   { key: 'nextKinName', label: 'Full name', group: 'Next of kin', tab: 'kin', placeholder: 'Full name of next of kin' },
   { key: 'nextKinRelationship', label: 'Relationship', group: 'Next of kin', tab: 'kin', placeholder: 'e.g. Spouse, Sibling, Child' },
-  { key: 'nextKinPhone', label: 'Phone number', group: 'Next of kin', tab: 'kin', type: 'tel', placeholder: 'e.g.0706391921' },
+  { key: 'nextKinPhone', label: 'Phone number', group: 'Next of kin', tab: 'kin', type: 'tel', placeholder: 'e.g. 0706391921' },
 ]
 
 const emptyProfile = Object.fromEntries(fields.map(({ key }) => [key, '']))
@@ -233,6 +258,7 @@ export function MemberAccountInfoPage() {
                     <p className="section-kicker">SECTION</p>
                     <h2>{group}</h2>
                   </div>
+                  {group.includes('Contact') && <Phone size={17} />}
                   {group.includes('bank') && <Landmark size={17} />}
                   {group.includes('Address') && <MapPin size={17} />}
                   {group.includes('Employment') && <Briefcase size={17} />}
@@ -243,15 +269,31 @@ export function MemberAccountInfoPage() {
                     .map((field) => (
                       <label key={field.key}>
                         {field.label}
-                        <input
-                          type={field.type ?? 'text'}
-                          value={profile[field.key] ?? ''}
-                          onChange={(event) =>
-                            setProfile((current) => ({ ...current, [field.key]: event.target.value }))
-                          }
-                          placeholder={field.placeholder}
-                          autoComplete={field.type === 'tel' ? 'tel' : field.type === 'email' ? 'email' : 'off'}
-                        />
+                        {field.options ? (
+                          <select
+                            value={profile[field.key] ?? ''}
+                            onChange={(event) =>
+                              setProfile((current) => ({ ...current, [field.key]: event.target.value }))
+                            }
+                          >
+                            {field.options.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            type={field.type ?? 'text'}
+                            value={profile[field.key] ?? ''}
+                            onChange={(event) =>
+                              setProfile((current) => ({ ...current, [field.key]: event.target.value }))
+                            }
+                            placeholder={field.placeholder}
+                            required={field.required}
+                            autoComplete={field.type === 'tel' ? 'tel' : field.type === 'email' ? 'email' : 'off'}
+                          />
+                        )}
                       </label>
                     ))}
                 </div>

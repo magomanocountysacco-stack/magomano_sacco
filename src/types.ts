@@ -151,6 +151,7 @@ export interface AdminMember {
   secondName: string
   lastName: string
   phoneNumber: string
+  altPhoneNumber?: string
   email: string
   county: string
   subCounty: string
@@ -196,6 +197,7 @@ export interface MemberProfileUpdate {
   nationalId: string
   fullName: string
   phoneNumber: string
+  altPhoneNumber?: string
   email: string
   county: string
   subCounty: string
@@ -319,6 +321,7 @@ export interface PendingProfileChange {
   status: 'pending' | 'approved' | 'rejected' | 'cancelled'
   submittedAt: string
   changes: Record<string, string>
+  current?: Record<string, string>
 }
 
 export interface AdminNotification {

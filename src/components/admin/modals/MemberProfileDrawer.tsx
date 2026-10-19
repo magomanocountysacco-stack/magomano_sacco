@@ -152,8 +152,12 @@ export function MemberProfileDrawer({
             <h4>Contact &amp; Location</h4>
             <dl className="drawer-dl">
               <div>
-                <dt>Phone Number</dt>
+                <dt>Primary Phone</dt>
                 <dd>{member.phoneNumber || '—'}</dd>
+              </div>
+              <div>
+                <dt>Alternative Phone</dt>
+                <dd>{member.altPhoneNumber || '—'}</dd>
               </div>
               <div>
                 <dt>Email Address</dt>

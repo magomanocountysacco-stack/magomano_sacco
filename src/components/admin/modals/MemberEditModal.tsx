@@ -90,12 +90,22 @@ export function MemberEditModal({
                 </datalist>
               </label>
               <label>
-                Phone Number
+                Primary Phone Number
                 <input
                   type="tel"
                   value={memberForm.phoneNumber}
                   onChange={(e) => setMemberForm((c) => ({ ...c, phoneNumber: e.target.value }))}
                   maxLength={32}
+                />
+              </label>
+              <label>
+                Alternative Phone Number
+                <input
+                  type="tel"
+                  value={memberForm.altPhoneNumber ?? ''}
+                  onChange={(e) => setMemberForm((c) => ({ ...c, altPhoneNumber: e.target.value }))}
+                  maxLength={32}
+                  placeholder="Optional secondary phone"
                 />
               </label>
               <label>

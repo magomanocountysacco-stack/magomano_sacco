@@ -3,9 +3,13 @@ import { ApiError, hashPassword, json, readJson } from './shared.js'
 
 async function memberProfile(request, session, env) {
   if (request.method === 'GET') {
-    const profile = await env.DB.prepare(`SELECT phone_number AS phoneNumber, email,
+    const profile = await env.DB.prepare(`SELECT phone_number AS phoneNumber,
+      COALESCE(alt_phone_number, '') AS altPhoneNumber,
+      email,
       job_title AS jobTitle, work_branch AS workBranch,
-      county, sub_county AS subCounty, location, bank_name AS bankName, bank_branch AS bankBranch,
+      county, sub_county AS subCounty, location,
+      COALESCE(marital_status, '') AS maritalStatus,
+      bank_name AS bankName, bank_branch AS bankBranch,
       bank_account_name AS bankAccountName, bank_account_number AS bankAccountNumber,
       bank_two_name AS bankTwoName, bank_two_branch AS bankTwoBranch,
       bank_two_account_name AS bankTwoAccountName, bank_two_account_number AS bankTwoAccountNumber,
@@ -16,18 +20,22 @@ async function memberProfile(request, session, env) {
   }
   if (request.method !== 'PUT') return null
   const body = await readJson(request)
-  const keys = ['phoneNumber','email','jobTitle','workBranch','county','subCounty','location','bankName','bankBranch',
+  const keys = ['phoneNumber','altPhoneNumber','email','jobTitle','workBranch','maritalStatus','county','subCounty','location','bankName','bankBranch',
     'bankAccountName','bankAccountNumber','bankTwoName','bankTwoBranch','bankTwoAccountName',
     'bankTwoAccountNumber','nextKinName','nextKinRelationship','nextKinPhone']
   const values = Object.fromEntries(keys.map((key) => [key, typeof body[key] === 'string' ? body[key].trim() : '']))
-  const limits = { phoneNumber: 32, email: 254, jobTitle: 100, workBranch: 100, county: 100, subCounty: 100, location: 160,
+  const limits = { phoneNumber: 32, altPhoneNumber: 32, email: 254, jobTitle: 100, workBranch: 100, maritalStatus: 30, county: 100, subCounty: 100, location: 160,
     bankName: 100, bankBranch: 100, bankAccountName: 120, bankAccountNumber: 64,
     bankTwoName: 100, bankTwoBranch: 100, bankTwoAccountName: 120, bankTwoAccountNumber: 64,
     nextKinName: 100, nextKinRelationship: 60, nextKinPhone: 32 }
   for (const [key, max] of Object.entries(limits)) {
     if (values[key].length > max) throw new ApiError(`${key} must be ${max} characters or fewer.`)
   }
-  if (values.phoneNumber.length < 5) throw new ApiError('Enter a valid phone number.')
+  if (values.phoneNumber.length < 5) throw new ApiError('Enter a valid primary phone number.')
+  if (values.altPhoneNumber && values.altPhoneNumber.length < 5) throw new ApiError('Enter a valid alternative phone number or leave it blank.')
+  if (values.maritalStatus && !['', 'single', 'married', 'divorced', 'widowed', 'other'].includes(values.maritalStatus)) {
+    throw new ApiError('Select a valid marital status.')
+  }
   if (values.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) throw new ApiError('Enter a valid email address, or leave it blank.')
   // Cancel any existing pending change for this member, then insert new one
   await env.DB.prepare(`UPDATE pending_profile_changes SET status='cancelled' WHERE member_id=? AND status='pending'`).bind(session.memberId).run()
