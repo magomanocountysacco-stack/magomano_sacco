@@ -91,7 +91,7 @@ npm run dev
 
 Local D1 data is separate from remote D1. Seed a local administrator by setting `$env:ADMIN_D1_LOCAL = "1"` before `npm run seed:admin`. `npm run deploy` builds and deploys the Pages project directly when needed.
 
-For a complete local preview with sample members, transactions, loans, repayments, pending requests, and dividends, run `npm run demo`. It applies local migrations, seeds only local D1, and serves the Cloudflare Pages app at `http://localhost:8788`. Local demo sign-in: admin `demo-admin` / `DemoAdmin-2026!`; approved member `99000101` / `DemoMember-2026!`. These credentials are for local preview only.
+For a complete local preview with sample members, transactions, loans, repayments, pending requests, and dividends, run `npm run demo`. It applies local migrations, seeds only local D1, and serves the Cloudflare Pages app at `http://localhost:8788`. Local demo sign-in: admin `Ken` / `1234`; approved member (National ID) `37765731` / `1234`. These credentials are for local preview only.
 
 To explicitly seed clearly labelled demo records into remote D1, set `ALLOW_REMOTE_DEMO_DATA=1` and run `npm run seed:demo:remote`. This adds sample account balances and pending applications to live SACCO totals and admin queues. The command prints generated, one-time demo login credentials; use them to inspect the live portal, and remove the `DEMO -` accounts and associated records when finished. Do not seed live demo records into a database whose balances or queues are being used as official financial records.
 

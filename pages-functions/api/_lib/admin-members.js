@@ -87,7 +87,9 @@ export async function handleAdminMembers(path, request, session, db) {
       db.prepare(`
         SELECT id, member_id AS memberId, loan_reference AS reference,
           principal_amount AS principalAmount, outstanding_balance AS outstandingBalance,
-          repayment_months AS repaymentMonths, status, issued_at AS issuedAt
+          CASE WHEN legacy_imported = 1 THEN NULL ELSE repayment_months END AS repaymentMonths,
+          status, CASE WHEN legacy_imported = 1 THEN NULL ELSE issued_at END AS issuedAt,
+          legacy_imported AS legacyImported
         FROM member_loans WHERE outstanding_balance > 0
         ORDER BY member_id, issued_at DESC, id DESC
       `).all(),
@@ -110,6 +112,7 @@ export async function handleAdminMembers(path, request, session, db) {
         repaymentMonths: loan.repaymentMonths,
         status: loan.status,
         issuedAt: loan.issuedAt,
+        legacyImported: Boolean(loan.legacyImported),
       })
       loansByMember.set(loan.memberId, loans)
     }
@@ -490,5 +493,56 @@ export async function handleAdminMembers(path, request, session, db) {
     }
     return json({ message: `Member account ${nextStatus}.`, status: nextStatus })
   }
+  // GET /admin/profile-changes — list pending profile change requests
+  if (path === '/admin/profile-changes' && method === 'GET') {
+    const rows = await db.prepare(`
+      SELECT p.id, p.member_id AS memberId, m.full_name AS memberName,
+        m.sacco_number AS saccoNumber, p.changes_json AS changesJson,
+        p.status, p.submitted_at AS submittedAt
+      FROM pending_profile_changes p
+      JOIN members m ON m.id = p.member_id
+      WHERE p.status = 'pending'
+      ORDER BY p.submitted_at DESC
+    `).all()
+    return json({
+      changes: rows.results.map((r) => ({ ...r, changes: JSON.parse(r.changesJson), changesJson: undefined }))
+    })
+  }
+
+  // POST /admin/profile-changes/:id/approve
+  const approveMatch = path.match(/^\/admin\/profile-changes\/(\d+)\/approve$/)
+  if (approveMatch && method === 'POST') {
+    const changeId = Number(approveMatch[1])
+    const row = await db.prepare(`SELECT * FROM pending_profile_changes WHERE id=? AND status='pending'`).bind(changeId).first()
+    if (!row) throw new ApiError('Pending change not found.', 404)
+    const changes = JSON.parse(row.changes_json)
+    await db.prepare(`UPDATE members SET phone_number=?, email=?, job_title=?, work_branch=?, county=?, sub_county=?, location=?,
+      bank_name=?, bank_branch=?, bank_account_name=?, bank_account_number=?,
+      bank_two_name=?, bank_two_branch=?, bank_two_account_name=?, bank_two_account_number=?,
+      next_kin_name=?, next_kin_relationship=?, next_kin_phone=? WHERE id=?`
+    ).bind(
+      changes.phoneNumber, changes.email, changes.jobTitle ?? '', changes.workBranch ?? '', changes.county, changes.subCounty, changes.location,
+      changes.bankName, changes.bankBranch, changes.bankAccountName, changes.bankAccountNumber,
+      changes.bankTwoName, changes.bankTwoBranch, changes.bankTwoAccountName, changes.bankTwoAccountNumber,
+      changes.nextKinName, changes.nextKinRelationship, changes.nextKinPhone,
+      row.member_id
+    ).run()
+    await db.prepare(`UPDATE pending_profile_changes SET status='approved', reviewed_at=datetime('now') WHERE id=?`)
+      .bind(changeId).run()
+    return json({ message: 'Profile change approved and applied to member account.' })
+  }
+
+  // POST /admin/profile-changes/:id/reject
+  const rejectMatch = path.match(/^\/admin\/profile-changes\/(\d+)\/reject$/)
+  if (rejectMatch && method === 'POST') {
+    const changeId = Number(rejectMatch[1])
+    const body2 = await readJson(request)
+    const note = typeof body2.note === 'string' ? body2.note.trim() : ''
+    const result = await db.prepare(`UPDATE pending_profile_changes SET status='rejected', reviewed_at=datetime('now'), admin_note=? WHERE id=? AND status='pending'`)
+      .bind(note, changeId).run()
+    if (!result.meta.changes) throw new ApiError('Pending change not found.', 404)
+    return json({ message: 'Profile change rejected.' })
+  }
+
   return null
 }

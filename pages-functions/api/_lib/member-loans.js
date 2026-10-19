@@ -27,8 +27,8 @@ async function applyForLoan(request, session, env) {
   if (!Number.isInteger(repaymentMonths) || repaymentMonths < 1 || repaymentMonths > 120) {
     throw new ApiError('Choose a repayment period from 1 to 120 months.')
   }
-  if (purpose && purpose.length > 500) {
-    throw new ApiError('Describe the purpose in 500 characters or fewer.')
+  if (purpose.length < 3 || purpose.length > 500) {
+    throw new ApiError('Enter a loan purpose between 3 and 500 characters.')
   }
   if (!['primary', 'secondary'].includes(payoutAccount)) {
     throw new ApiError('Choose the bank account where loan funds should be deposited.')
@@ -58,7 +58,7 @@ async function applyForLoan(request, session, env) {
   }
 
   const signatureName = standardizeName(member.fullName)
-  const effectivePurpose = purpose || 'Personal'
+  const effectivePurpose = purpose
   const signedAt = new Date().toISOString().replace('T', ' ').slice(0, 19)
 
   // Recheck borrowing capacity in the insert itself so concurrent applications

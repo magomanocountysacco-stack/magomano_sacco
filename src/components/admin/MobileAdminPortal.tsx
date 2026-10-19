@@ -11,6 +11,8 @@ import { AdminRepaymentsView } from './views/AdminRepaymentsView'
 import { AdminSavingsView } from './views/AdminSavingsView'
 import { AdminChargesView } from './views/AdminChargesView'
 import { AdminTermsView } from './views/AdminTermsView'
+import { AdminNotificationsView } from './views/AdminNotificationsView'
+import { AdminAuthorizationsView } from './views/AdminAuthorizationsView'
 import { AdminBulkImportView } from './views/AdminBulkImportView'
 import { MemberProfileDrawer } from './modals/MemberProfileDrawer'
 import { MemberEditModal } from './modals/MemberEditModal'
@@ -39,6 +41,7 @@ export interface MobileAdminPortalProps {
   members: AdminMember[]
   applications: AdminLoanApplication[]
   openLoans: AdminOpenLoan[]
+  pendingAuthorizationsCount?: number
   onCreateMember: (input: AdminMemberCreate) => Promise<boolean>
   onIssueLoan: (input: AdminLoanCreate) => Promise<boolean>
   memberId: string
@@ -133,6 +136,7 @@ export function MobileAdminPortal({
   onSavingsEntry,
   repaymentLoanId, setRepaymentLoanId, repaymentAmount, setRepaymentAmount,
   repaymentDescription, setRepaymentDescription, onLoanRepayment, submitting,
+  pendingAuthorizationsCount = 0,
 }: MobileAdminPortalProps) {
   const ui = useAdminPortalState(
     members,
@@ -241,6 +245,7 @@ export function MobileAdminPortal({
             approvedMembersCount={ui.approvedMembers.length}
             pendingMembers={ui.pendingMembers}
             pendingApplications={ui.pendingApplications}
+            pendingAuthorizationsCount={pendingAuthorizationsCount}
             setView={setView}
             setMemberFilter={ui.setMemberFilter}
             setLoanFilter={ui.setLoanFilter}
@@ -322,7 +327,11 @@ export function MobileAdminPortal({
           />
         )}
 
+        {view === 'authorizations' && <AdminAuthorizationsView onRefresh={onRefresh} />}
+
         {view === 'charges' && <AdminChargesView members={members} onRefresh={onRefresh} />}
+
+        {view === 'notifications' && <AdminNotificationsView members={members} />}
 
         {view === 'bulk' && <AdminBulkImportView onImported={onRefresh} />}
 
@@ -365,6 +374,7 @@ export function MobileAdminPortal({
         setView={setView}
         pendingMembersCount={ui.pendingMembers.length}
         pendingApplicationsCount={ui.pendingApplications.length}
+        pendingAuthorizationsCount={pendingAuthorizationsCount}
         signedInAdmin={signedInAdmin}
         isRefreshing={ui.isRefreshing}
         isOpen={drawerOpen}

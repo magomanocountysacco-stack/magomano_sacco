@@ -9,6 +9,8 @@ import { AdminRepaymentsView } from './views/AdminRepaymentsView'
 import { AdminSavingsView } from './views/AdminSavingsView'
 import { AdminChargesView } from './views/AdminChargesView'
 import { AdminTermsView } from './views/AdminTermsView'
+import { AdminNotificationsView } from './views/AdminNotificationsView'
+import { AdminAuthorizationsView } from './views/AdminAuthorizationsView'
 import { AdminBulkImportView } from './views/AdminBulkImportView'
 import { MemberProfileDrawer } from './modals/MemberProfileDrawer'
 import { MemberEditModal } from './modals/MemberEditModal'
@@ -36,6 +38,7 @@ export interface AdminPortalProps {
   members: AdminMember[]
   applications: AdminLoanApplication[]
   openLoans: AdminOpenLoan[]
+  pendingAuthorizationsCount?: number
   onCreateMember: (input: AdminMemberCreate) => Promise<boolean>
   onIssueLoan: (input: AdminLoanCreate) => Promise<boolean>
   memberId: string
@@ -97,6 +100,7 @@ export function AdminPortal({
   memberId, setMemberId, amount, setAmount, description, setDescription, onSavingsEntry,
   repaymentLoanId, setRepaymentLoanId, repaymentAmount, setRepaymentAmount,
   repaymentDescription, setRepaymentDescription, onLoanRepayment, submitting,
+  pendingAuthorizationsCount = 0,
 }: AdminPortalProps) {
   const ui = useAdminPortalState(
     members, applications,
@@ -127,6 +131,7 @@ export function AdminPortal({
           setView={setView}
           pendingMembersCount={ui.pendingMembers.length}
           pendingApplicationsCount={ui.pendingApplications.length}
+          pendingAuthorizationsCount={pendingAuthorizationsCount}
         />
 
         <main className="admin-viewport">
@@ -143,6 +148,7 @@ export function AdminPortal({
               approvedMembersCount={ui.approvedMembers.length}
               pendingMembers={ui.pendingMembers}
               pendingApplications={ui.pendingApplications}
+              pendingAuthorizationsCount={pendingAuthorizationsCount}
               setView={setView}
               setMemberFilter={ui.setMemberFilter}
               setLoanFilter={ui.setLoanFilter}
@@ -224,7 +230,11 @@ export function AdminPortal({
             />
           )}
 
+          {view === 'authorizations' && <AdminAuthorizationsView onRefresh={onRefresh} />}
+
           {view === 'charges' && <AdminChargesView members={members} onRefresh={onRefresh} />}
+
+          {view === 'notifications' && <AdminNotificationsView members={members} />}
 
           {view === 'bulk' && <AdminBulkImportView onImported={onRefresh} />}
 
