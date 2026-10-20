@@ -41,7 +41,7 @@ export function DocFacilitySection({
         <div className="metric-box">
           <span className="m-label">INTEREST RATE</span>
           <strong className="m-val">10.0% Flat</strong>
-          <span className="m-note">SACCO Regulated Rate</span>
+          <span className="m-note">SACCO Regulated Rate.</span>
         </div>
 
         <div className="metric-box highlight-box">
