@@ -7,6 +7,14 @@ body {
   color: var(--rt-text);
 }
 
+@media print {
+  html, body {
+    color-scheme: light !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+}
+
 body {
   font-family: 'Manrope', 'Plus Jakarta Sans', 'Avenir Next', Avenir, 'Segoe UI', sans-serif;
 }
@@ -17,4 +25,3 @@ select,
 textarea {
   color-scheme: dark;
 }
-

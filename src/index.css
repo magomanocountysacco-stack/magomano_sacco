@@ -109,6 +109,13 @@ textarea:focus-visible {
 ::selection { color: #fff; background: var(--rt-orange); }
 ::-webkit-scrollbar { display: none; }
 
+@media print {
+  html, body {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     scroll-behavior: auto !important;

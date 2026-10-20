@@ -63,6 +63,7 @@ export function AdminLoansView({
     if (await onIssueLoan(newLoan)) {
       setNewLoan({ memberId: 0, principalAmount: 0, repaymentMonths: 1, purpose: '' })
       setShowIssueForm(false)
+      setLoanFilter('all')
     }
   }
 
