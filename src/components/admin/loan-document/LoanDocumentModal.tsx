@@ -76,8 +76,7 @@ export function LoanDocumentModal({
     setIsPrinting(true)
     const originalTitle = document.title
     try {
-      const sanitizedName = application.fullName.trim().replace(/\s+/g, '_')
-      document.title = `${isAdminIssued ? 'Loan_Record' : 'Loan_Application'}_${appNumber}_${sanitizedName}`
+      document.title = ''
       await new Promise((resolve) => setTimeout(resolve, 80))
       window.print()
     } finally {

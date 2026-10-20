@@ -1,7 +1,7 @@
 @media print {
   @page {
     size: A4 portrait;
-    margin: 12mm 14mm;
+    margin: 0;
   }
 
   html,
@@ -33,8 +33,8 @@
 
   /* Strip dark chrome off every wrapper layer */
   .loan-modal-overlay {
-    position: static !important;
-    inset: auto !important;
+    position: fixed !important;
+    inset: 0 auto auto 0 !important;
     padding: 0 !important;
     margin: 0 !important;
     background: #ffffff !important;
@@ -102,16 +102,15 @@
     min-width: 0 !important;
     min-height: 0 !important;
     height: auto !important;
+    box-sizing: border-box !important;
     margin: 0 !important;
-    padding: 12mm 0 10mm !important;
+    padding: 10mm 14mm !important;
     box-shadow: none !important;
     border: none !important;
     border-radius: 0 !important;
-    display: flex !important;
+    display: block !important;
     flex-direction: column !important;
     justify-content: space-between !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
     background: #ffffff !important;
     background-color: #ffffff !important;
     overflow: visible !important;
