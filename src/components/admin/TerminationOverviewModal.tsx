@@ -4,6 +4,14 @@ import countyLogo from '../../../Logo.webp'
 import { currency, formatDate } from '../../format'
 import type { AdminMember } from '../../types'
 
+interface StatementEntry {
+  description: string
+  occurredAt: string
+  debit: number
+  credit: number
+  balance: number
+}
+
 interface TerminationReport {
   member: {
     saccoNumber: string | null
@@ -21,13 +29,9 @@ interface TerminationReport {
     settledAt: string
     charges: { description: string; amount: number }[]
   }
-  ledger: {
-    description: string
-    occurredAt: string
-    debit: number
-    credit: number
-    balance: number
-  }[]
+  loanStatement: StatementEntry[]
+  savingsStatement: StatementEntry[]
+  ledger: StatementEntry[]
 }
 
 interface TerminationOverviewModalProps {
@@ -103,13 +107,42 @@ function downloadExcel(report: TerminationReport) {
   window.setTimeout(() => URL.revokeObjectURL(url), 0)
 }
 
-export function TerminationOverviewModal({ memberId, signatories, onClose }: TerminationOverviewModalProps) {
-  const [report, setReport] = useState<TerminationReport | null>(null)
-  const [error, setError] = useState('')
-  const statementTotals = report?.ledger.reduce((sum, entry) => ({
+function StatementTable({ entries, emptyMessage }: { entries: StatementEntry[]; emptyMessage: string }) {
+  const totals = entries.reduce((sum, entry) => ({
     debit: sum.debit + entry.debit,
     credit: sum.credit + entry.credit,
   }), { debit: 0, credit: 0 })
+
+  return (
+    <div className="termination-report-table-wrap">
+      <table className="termination-report-table">
+        <thead><tr><th>Date</th><th>Description</th><th>Debit</th><th>Credit</th><th>Balance</th></tr></thead>
+        <tbody>
+          {entries.map((entry, index) => (
+            <tr key={`${entry.occurredAt}-${index}`}>
+              <td>{formatDate(entry.occurredAt)}</td>
+              <td>{entry.description}</td>
+              <td>{entry.debit ? currency.format(entry.debit) : '—'}</td>
+              <td>{entry.credit ? currency.format(entry.credit) : '—'}</td>
+              <td>{currency.format(entry.balance)}</td>
+            </tr>
+          ))}
+          {!entries.length && <tr><td colSpan={5}>{emptyMessage}</td></tr>}
+          <tr className="termination-statement-totals">
+            <td colSpan={2}>Totals</td>
+            <td>{currency.format(totals.debit)}</td>
+            <td>{currency.format(totals.credit)}</td>
+            <td>{currency.format(entries[entries.length - 1]?.balance ?? 0)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+export function TerminationOverviewModal({ memberId, signatories, onClose }: TerminationOverviewModalProps) {
+  const [report, setReport] = useState<TerminationReport | null>(null)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     const controller = new AbortController()
@@ -192,17 +225,34 @@ export function TerminationOverviewModal({ memberId, signatories, onClose }: Ter
               </dl>
             </section>
 
-            <section className="termination-report-section">
+            <section className="termination-report-section termination-ledger-section">
               <div className="termination-section-heading">
                 <span>SECTION 02</span>
+                <h3>Savings statement</h3>
+              </div>
+              <StatementTable entries={report.savingsStatement} emptyMessage="No savings transactions recorded." />
+            </section>
+
+            <section className="termination-report-section termination-ledger-section">
+              <div className="termination-section-heading">
+                <span>SECTION 03</span>
+                <h3>Loan statements</h3>
+              </div>
+              <StatementTable entries={report.loanStatement} emptyMessage="No loan transactions recorded." />
+            </section>
+
+            <section className="termination-report-section">
+              <div className="termination-section-heading">
+                <span>SECTION 04</span>
                 <h3>Final settlement</h3>
               </div>
               <dl className="termination-settlement-summary">
                 <div><dt>Savings before settlement</dt><dd>{currency.format(report.termination.savingsBefore)}</dd></div>
                 <div><dt>Savings applied to loans</dt><dd>{currency.format(report.termination.savingsApplied)}</dd></div>
+                <div><dt>Loan balance settled</dt><dd>{currency.format(report.termination.loanBalanceSettled)}</dd></div>
+                <div><dt>Loan balance remaining</dt><dd>{currency.format(report.termination.remainingLoanDue)}</dd></div>
                 <div><dt>Custom admin charges</dt><dd>{currency.format(report.termination.charges.reduce((sum, charge) => sum + charge.amount, 0))}</dd></div>
                 <div><dt>Paid out (withdrawal; no interest)</dt><dd>{currency.format(report.termination.payoutAmount)}</dd></div>
-                <div><dt>Loan balance remaining</dt><dd>{currency.format(report.termination.remainingLoanDue)}</dd></div>
               </dl>
               {report.termination.charges.length > 0 && (
                 <div className="termination-custom-charges">
@@ -216,39 +266,9 @@ export function TerminationOverviewModal({ memberId, signatories, onClose }: Ter
               )}
             </section>
 
-            <section className="termination-report-section termination-ledger-section">
-              <div className="termination-section-heading">
-                <span>SECTION 03</span>
-                <h3>Member transaction statement</h3>
-              </div>
-              <div className="termination-report-table-wrap">
-                <table className="termination-report-table">
-                  <thead><tr><th>Date</th><th>Description</th><th>Debit</th><th>Credit</th><th>Balance</th></tr></thead>
-                  <tbody>
-                    {report.ledger.map((entry, index) => (
-                      <tr key={`${entry.occurredAt}-${index}`}>
-                        <td>{formatDate(entry.occurredAt)}</td>
-                        <td>{entry.description}</td>
-                        <td>{entry.debit ? currency.format(entry.debit) : '—'}</td>
-                        <td>{entry.credit ? currency.format(entry.credit) : '—'}</td>
-                        <td>{currency.format(entry.balance)}</td>
-                      </tr>
-                    ))}
-                    {!report.ledger.length && <tr><td colSpan={5}>No member financial transactions recorded.</td></tr>}
-                    <tr className="termination-statement-totals">
-                      <td colSpan={2}>Totals</td>
-                      <td>{currency.format(statementTotals?.debit ?? 0)}</td>
-                      <td>{currency.format(statementTotals?.credit ?? 0)}</td>
-                      <td>{currency.format(report.ledger[report.ledger.length - 1]?.balance ?? 0)}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </section>
-
             <section className="termination-report-section termination-acknowledgement">
               <div className="termination-section-heading">
-                <span>SECTION 04</span>
+                <span>SECTION 05</span>
                 <h3>Acknowledgement &amp; disbursement</h3>
               </div>
               <div className="termination-disbursement-note">

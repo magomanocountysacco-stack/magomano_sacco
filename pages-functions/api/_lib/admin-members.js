@@ -280,46 +280,50 @@ export async function handleAdminMembers(path, request, session, db) {
     ])
     if (!member || !termination) throw new ApiError('Terminated member settlement was not found.', 404)
 
-    const statementEntries = [
-      ...loanRows.results.map((loan) => ({
+    const loanEntries = loanRows.results.map((loan) => ({
         occurredAt: loan.issuedAt,
         description: `Loan issued — ${loan.reference} (principal ${Number(loan.principalAmount).toFixed(2)})`,
         debit: Number(loan.totalRepayable),
         credit: 0,
         sortPriority: 0,
         sortId: Number(loan.id),
-      })),
-      ...repaymentRows.results.map((repayment) => ({
+      }))
+    const repaymentEntries = repaymentRows.results.map((repayment) => ({
         occurredAt: repayment.paidAt,
         description: `Loan repayment — ${repayment.loanReference}${repayment.description ? `: ${repayment.description}` : ''}`,
         debit: 0,
         credit: Number(repayment.amount),
         sortPriority: 1,
         sortId: Number(repayment.id),
-      })),
-      ...savingsRows.results.map((entry) => ({
+      }))
+    const savingsEntries = savingsRows.results.map((entry) => ({
         occurredAt: entry.occurredAt,
         description: entry.description || (entry.entryType === 'deposit' ? 'Savings deposit' : 'Savings withdrawal'),
         debit: entry.entryType === 'withdrawal' ? Number(entry.amount) : 0,
         credit: entry.entryType === 'deposit' ? Number(entry.amount) : 0,
         sortPriority: entry.entryType === 'withdrawal' ? 2 : 1,
         sortId: Number(entry.id),
-      })),
-    ].sort((left, right) => left.occurredAt.localeCompare(right.occurredAt)
-      || left.sortPriority - right.sortPriority
-      || left.sortId - right.sortId)
-
-    let balance = 0
-    const ledger = statementEntries.map((entry) => {
-      balance = Math.round((balance + entry.credit - entry.debit) * 100) / 100
-      return {
-        occurredAt: entry.occurredAt,
-        description: entry.description,
-        debit: entry.debit,
-        credit: entry.credit,
-        balance,
-      }
-    })
+      }))
+    const buildStatement = (entries, balanceDirection = 1) => {
+      let balance = 0
+      return entries
+        .sort((left, right) => left.occurredAt.localeCompare(right.occurredAt)
+          || left.sortPriority - right.sortPriority
+          || left.sortId - right.sortId)
+        .map((entry) => {
+          balance = Math.round((balance + (entry.credit - entry.debit) * balanceDirection) * 100) / 100
+          return {
+            occurredAt: entry.occurredAt,
+            description: entry.description,
+            debit: entry.debit,
+            credit: entry.credit,
+            balance,
+          }
+        })
+    }
+    const loanStatement = buildStatement([...loanEntries, ...repaymentEntries], -1)
+    const savingsStatement = buildStatement(savingsEntries)
+    const ledger = buildStatement([...loanEntries, ...repaymentEntries, ...savingsEntries])
     return json({
       member,
       termination: {
@@ -332,6 +336,8 @@ export async function handleAdminMembers(path, request, session, db) {
         charges: JSON.parse(termination.chargesJson),
       },
       ledger,
+      loanStatement,
+      savingsStatement,
     })
   }
   if (terminateMember && method === 'POST') {

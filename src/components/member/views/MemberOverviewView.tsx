@@ -108,13 +108,13 @@ export function MemberOverviewView({
               <p className="section-kicker">ACCOUNT ACTIVITY</p>
               <h2>Savings statement</h2>
               <span className="statement-total">
-                {savingsPage.loading ? 'Loading…' : `${savingsPage.total} transactions`}
+                {savingsPage.loading ? 'Loading…' : `${savingsPage.total} statement entries`}
               </span>
             </div>
             <div className="statement-heading-actions">
               <Wallet size={19} aria-hidden="true" />
               <StatementFilterPopover
-                label="savings transactions"
+                label="savings statement entries"
                 filters={savingsPage.filters}
                 onApply={(filters) => onUpdateFilter(setSavingsPage, filters)}
               />
@@ -137,16 +137,16 @@ export function MemberOverviewView({
               ))}
             </div>
           ) : savingsPage.loading ? (
-            <p className="empty-statement">Loading savings transactions…</p>
+            <p className="empty-statement">Loading savings statement…</p>
           ) : !savingsPage.error && (
             <p className="empty-statement">
               {savingsPage.filters.search || savingsPage.filters.from || savingsPage.filters.to
                 ? 'No savings transactions match these filters.'
-                : 'No savings transactions have been recorded yet.'}
+                : 'No savings statement entries are available yet.'}
             </p>
           )}
           <StatementPagination
-            label="savings transactions"
+            label="savings statement entries"
             page={savingsPage.page}
             pageSize={savingsPage.pageSize}
             total={savingsPage.total}

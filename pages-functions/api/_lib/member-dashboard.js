@@ -139,14 +139,52 @@ export async function memberTransactions(request, session, env) {
       where.push('(description LIKE ?)')
       params.push(`%${filters.search}%`)
     }
-    countQuery = env.DB.prepare(`
-      SELECT COUNT(*) AS total FROM savings_transactions WHERE ${where.join(' AND ')}
-    `).bind(...params)
+    const zeroConditions = [
+      "month < strftime('%Y-%m', 'now')",
+      `NOT EXISTS (
+        SELECT 1 FROM savings_transactions contribution
+        WHERE contribution.member_id = ? AND contribution.entry_type = 'deposit'
+          AND contribution.amount > 0 AND strftime('%Y-%m', contribution.occurred_at) = months.month
+      )`,
+    ]
+    const zeroParams = [memberId]
+    if (filters.from) {
+      zeroConditions.push("date(month || '-01', '+1 month', '-1 day') >= date(?)")
+      zeroParams.push(filters.from)
+    }
+    if (filters.to) {
+      zeroConditions.push("date(month || '-01', '+1 month', '-1 day') <= date(?)")
+      zeroParams.push(filters.to)
+    }
+    if (filters.search) {
+      zeroConditions.push("'Monthly contribution not recorded' LIKE ?")
+      zeroParams.push(`%${filters.search}%`)
+    }
+    const statementCte = `
+      WITH RECURSIVE months(month) AS (
+        SELECT strftime('%Y-%m', created_at) FROM members WHERE id = ?
+        UNION ALL
+        SELECT strftime('%Y-%m', date(month || '-01', '+1 month'))
+        FROM months
+        WHERE month < strftime('%Y-%m', 'now', 'start of month', '-1 month')
+      ), statement_rows AS (
+        SELECT entry_type AS entryType, amount, description, occurred_at AS occurredAt, id AS rowId
+        FROM savings_transactions WHERE ${where.join(' AND ')}
+        UNION ALL
+        SELECT 'deposit' AS entryType, 0 AS amount,
+          'Monthly contribution not recorded' AS description,
+          date(month || '-01', '+1 month', '-1 day') || ' 23:59:59' AS occurredAt,
+          0 AS rowId
+        FROM months WHERE ${zeroConditions.join(' AND ')}
+      )
+    `
+    countQuery = env.DB.prepare(`${statementCte} SELECT COUNT(*) AS total FROM statement_rows`)
+      .bind(memberId, ...params, ...zeroParams)
     itemsQuery = env.DB.prepare(`
-      SELECT entry_type AS entryType, amount, description, occurred_at AS occurredAt
-      FROM savings_transactions WHERE ${where.join(' AND ')}
-      ORDER BY occurred_at DESC, id DESC LIMIT ? OFFSET ?
-    `).bind(...params, pageSize, offset)
+      ${statementCte}
+      SELECT entryType, amount, description, occurredAt
+      FROM statement_rows ORDER BY occurredAt DESC, rowId DESC LIMIT ? OFFSET ?
+    `).bind(memberId, ...params, ...zeroParams, pageSize, offset)
   } else if (type === 'loans') {
     const where = ['member_id = ?', ...dateConditions]
     const params = [memberId, ...dateParams]
