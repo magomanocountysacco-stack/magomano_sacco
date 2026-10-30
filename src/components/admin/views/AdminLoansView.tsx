@@ -63,6 +63,8 @@ export function AdminLoansView({
     if (await onIssueLoan(newLoan)) {
       setNewLoan({ memberId: 0, principalAmount: 0, repaymentMonths: 1, purpose: '' })
       setShowIssueForm(false)
+      // Reset filter to 'all' so the newly-issued (disbursed) loan is visible
+      setLoanFilter('all')
     }
   }
 

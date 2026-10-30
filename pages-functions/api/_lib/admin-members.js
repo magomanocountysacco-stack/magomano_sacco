@@ -335,9 +335,9 @@ export async function handleAdminMembers(path, request, session, db) {
         savingsBefore: Number(termination.savingsBefore),
         charges: JSON.parse(termination.chargesJson),
       },
-      ledger,
       loanStatement,
       savingsStatement,
+      ledger,
     })
   }
   if (terminateMember && method === 'POST') {

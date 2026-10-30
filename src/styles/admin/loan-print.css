@@ -1,7 +1,7 @@
 @media print {
   @page {
     size: A4 portrait;
-    margin: 8mm 10mm;
+    margin: 12mm 14mm;
   }
 
   html,
@@ -17,7 +17,7 @@
     print-color-adjust: exact !important;
   }
 
-  /* Hide everything on screen except the modal and document */
+  /* Hide everything except the document and its ancestor wrappers */
   body * {
     visibility: hidden !important;
   }
@@ -31,17 +31,29 @@
     visibility: visible !important;
   }
 
+  /* Strip dark chrome off every wrapper layer */
   .loan-modal-overlay {
-    position: absolute !important;
-    inset: 0 !important;
+    position: static !important;
+    inset: auto !important;
     padding: 0 !important;
+    margin: 0 !important;
     background: #ffffff !important;
+    background-color: #ffffff !important;
     backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
     display: block !important;
     overflow: visible !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    z-index: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
   }
 
   .loan-modal-container {
+    position: static !important;
     width: 100% !important;
     max-width: none !important;
     height: auto !important;
@@ -50,12 +62,18 @@
     box-shadow: none !important;
     border-radius: 0 !important;
     background: #ffffff !important;
+    background-color: #ffffff !important;
     padding: 0 !important;
     margin: 0 !important;
     overflow: visible !important;
+    display: block !important;
   }
 
+  /* Hide toolbar, cheque entry row, scroll hint, edit form and alerts */
   .loan-modal-toolbar,
+  .loan-modal-cheque-entry,
+  .loan-modal-scroll-hint,
+  .admin-banner-alert,
   .loan-edit-card {
     display: none !important;
   }
@@ -65,19 +83,27 @@
     padding: 0 !important;
     margin: 0 !important;
     background: #ffffff !important;
+    background-color: #ffffff !important;
     overflow: visible !important;
     height: auto !important;
     max-height: none !important;
     display: block !important;
+    position: static !important;
+    flex: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    justify-content: unset !important;
   }
 
+  /* The A4 document itself */
   .official-loan-document {
     width: 100% !important;
     max-width: none !important;
-    min-height: 275mm !important;
-    height: 275mm !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
     margin: 0 !important;
-    padding: 2mm 4mm !important;
+    padding: 12mm 0 10mm !important;
     box-shadow: none !important;
     border: none !important;
     border-radius: 0 !important;
@@ -86,5 +112,8 @@
     justify-content: space-between !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    overflow: visible !important;
   }
 }
